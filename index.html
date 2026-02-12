@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Office Tracker</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
+        .container { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .btn { padding: 25px 60px; font-size: 30px; font-weight: bold; cursor: pointer; border: none; border-radius: 15px; transition: 0.2s; color: white; min-width: 200px; text-transform: uppercase; }
+        
+        /* State-specific styles */
+        .state-in { background-color: #f39c12; } /* Shows OUT because you are currently IN */
+        .state-out { background-color: #007bff; } /* Shows IN because you are currently OUT */
+        
+        .btn:active { transform: scale(0.95); }
+        .loading { opacity: 0.5; pointer-events: none; }
+        #status { margin-top: 15px; color: #666; font-weight: 500; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button id="toggleBtn" class="btn">---</button>
+        <div id="status">Checking status...</div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('toggleBtn');
+        const statusText = document.getElementById('status');
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwZ0MbIwV9F4AcMtJgdNAXD9jpSHOkWftL7V25ABSKkY8PBeLaImJySvK5v1CjiESYz/exec';
+
+        // 1. Initialize State: Check localStorage or default to 'OUT' (meaning you need to clock IN)
+        let isClockedIn = localStorage.getItem('isClockedIn') === 'true';
+
+        // 2. Initial UI Sync
+        updateUI();
+
+        function updateUI() {
+            if (isClockedIn) {
+                btn.innerText = "Clock OUT";
+                btn.className = "btn state-in";
+                statusText.innerText = "Status: You are currently IN";
+            } else {
+                btn.innerText = "Clock IN";
+                btn.className = "btn state-out";
+                statusText.innerText = "Status: You are currently OUT";
+            }
+        }
+
+        btn.addEventListener('click', () => {
+            const action = isClockedIn ? "OUT" : "IN";
+            const now = new Date();
+            
+            const data = {
+                date: now.toLocaleDateString(),
+                time: now.getHours() + ":" + String(now.getMinutes()).padStart(2, '0') + ":" + String(now.getSeconds()).padStart(2, '0'),
+                action: action
+            };
+
+            btn.classList.add('loading');
+            btn.innerText = "Syncing...";
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                // Toggle the boolean state
+                isClockedIn = !isClockedIn;
+                
+                // Save the new state to the browser's permanent memory
+                localStorage.setItem('isClockedIn', isClockedIn);
+                
+                // Update the visual button
+                updateUI();
+            })
+            .catch(err => {
+                alert('Connection Error! Your time was not saved.');
+                updateUI(); // Reset UI
+            })
+            .finally(() => btn.classList.remove('loading'));
+        });
+    </script>
+</body>
+</html>
