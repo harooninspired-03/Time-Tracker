@@ -713,8 +713,8 @@
       const i = sessions.length - 1 - ri; // real index
       const inT  = s.inTime  ? new Date(s.inTime)  : null;
       const outT = s.outTime ? new Date(s.outTime) : null;
-      const inVal  = inT  ? `${pad(inT.getHours())}:${pad(inT.getMinutes())}` : '';
-      const outVal = outT ? `${pad(outT.getHours())}:${pad(outT.getMinutes())}` : '';
+      const inVal  = inT  ? `${pad(inT.getHours())}:${pad(inT.getMinutes())}:${pad(inT.getSeconds())}` : '';
+      const outVal = outT ? `${pad(outT.getHours())}:${pad(outT.getMinutes())}:${pad(outT.getSeconds())}` : '';
       const dur = s.durationSec ? secsToHMS(s.durationSec) : (s.outTime ? '—' : 'running...');
 
       return `
@@ -742,20 +742,30 @@
   }
 
   function saveSession(i){
-    const inInput  = document.getElementById(`in-${i}`).value;
+    const inInput  = document.getElementById(`in-${i}`).value;  // "HH:mm" or "HH:mm:ss"
     const outInput = document.getElementById(`out-${i}`).value;
     const s = sessions[i];
 
+    function parseTimeParts(val){
+      const parts = val.split(':');
+      return { h: +parts[0], m: +parts[1], sec: parts[2] ? +parts[2] : 0 };
+    }
+
+    function toTimeString(val){
+      const {h,m,sec} = parseTimeParts(val);
+      return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+    }
+
     if(inInput){
-      const [h,m] = inInput.split(':');
+      const {h,m,sec} = parseTimeParts(inInput);
       const base = new Date(s.inTime || s.date);
-      base.setHours(+h, +m, 0, 0);
+      base.setHours(h, m, sec, 0);
       s.inTime = base.toISOString();
     }
     if(outInput){
-      const [h,m] = outInput.split(':');
+      const {h,m,sec} = parseTimeParts(outInput);
       const base = new Date(s.outTime || s.inTime || s.date);
-      base.setHours(+h, +m, 0, 0);
+      base.setHours(h, m, sec, 0);
       s.outTime = base.toISOString();
     }
 
@@ -770,12 +780,12 @@
     showLastAction();
     showToast('✓ Session updated');
 
-    // Sync edit to Sheets
+    // Sync edit to Sheets — always send proper HH:mm:ss
     if(inInput){
-      syncToSheets({ date: s.date, time: inInput+':00', action: 'IN_EDIT', sessionIndex: i });
+      syncToSheets({ date: s.date, time: toTimeString(inInput), action: 'IN_EDIT', sessionIndex: i });
     }
     if(outInput){
-      syncToSheets({ date: s.date, time: outInput+':00', action: 'OUT_EDIT', sessionIndex: i });
+      syncToSheets({ date: s.date, time: toTimeString(outInput), action: 'OUT_EDIT', sessionIndex: i });
     }
   }
 
