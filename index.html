@@ -691,29 +691,40 @@
     setSyncState('syncing');
 
     if(action === 'IN'){
-      // For IN: use no-cors (can't read response), so we store sheetRow optimistically
-      // Apps Script will append to next available row — we track lastRow locally
-      const estimatedRow = 2 + sessions.length - 1; // header=row1, sessions start row2
-      sessions[sessions.length - 1].sheetRow = estimatedRow;
-      localStorage.setItem('sessions', JSON.stringify(sessions));
+      // For IN: fetch so we can read the actual row number back
       fetch(SCRIPT_URL, {
         method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({...payload, estimatedRow})
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(payload)
       })
-      .then(()=> setSyncState('synced'))
+      .then(r => r.json())
+      .then(res => {
+        if(res.row){
+          sessions[sessions.length - 1].sheetRow = res.row;
+          localStorage.setItem('sessions', JSON.stringify(sessions));
+        }
+        setSyncState('synced');
+      })
       .catch(()=>{ setSyncState('error'); showToast('⚠ Sync failed — saved locally', 3000); });
     } else {
-      // For OUT: send the sheetRow so Apps Script updates the exact row
-      const last = sessions[sessions.length - 1];
-      const sheetRow = last ? last.sheetRow : null;
-      fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({...payload, sheetRow})
-      })
-      .then(()=> setSyncState('synced'))
-      .catch(()=>{ setSyncState('error'); showToast('⚠ Sync failed — saved locally', 3000); });
+      // For OUT: wait until sheetRow is available, then send
+      const sessionRef = sessions[sessions.length - 1];
+      function sendOut(attempts){
+        const sheetRow = sessionRef ? sessionRef.sheetRow : null;
+        if(!sheetRow && attempts > 0){
+          // sheetRow not yet back from IN response, retry in 500ms
+          setTimeout(() => sendOut(attempts - 1), 500);
+          return;
+        }
+        fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({...payload, sheetRow})
+        })
+        .then(()=> setSyncState('synced'))
+        .catch(()=>{ setSyncState('error'); showToast('⚠ Sync failed — saved locally', 3000); });
+      }
+      sendOut(6); // retry up to 6x = 3 seconds wait
     }
   }
 
@@ -900,7 +911,7 @@
     setSyncState('syncing');
     fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     })
     .then(()=> setSyncState('synced'))
