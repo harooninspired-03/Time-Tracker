@@ -689,16 +689,32 @@
       action
     };
     setSyncState('syncing');
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(payload)
-    })
-    .then(()=> setSyncState('synced'))
-    .catch(()=>{
-      setSyncState('error');
-      showToast('⚠ Sync failed — saved locally', 3000);
-    });
+
+    if(action === 'IN'){
+      // For IN: use no-cors (can't read response), so we store sheetRow optimistically
+      // Apps Script will append to next available row — we track lastRow locally
+      const estimatedRow = 2 + sessions.length - 1; // header=row1, sessions start row2
+      sessions[sessions.length - 1].sheetRow = estimatedRow;
+      localStorage.setItem('sessions', JSON.stringify(sessions));
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({...payload, estimatedRow})
+      })
+      .then(()=> setSyncState('synced'))
+      .catch(()=>{ setSyncState('error'); showToast('⚠ Sync failed — saved locally', 3000); });
+    } else {
+      // For OUT: send the sheetRow so Apps Script updates the exact row
+      const last = sessions[sessions.length - 1];
+      const sheetRow = last ? last.sheetRow : null;
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({...payload, sheetRow})
+      })
+      .then(()=> setSyncState('synced'))
+      .catch(()=>{ setSyncState('error'); showToast('⚠ Sync failed — saved locally', 3000); });
+    }
   }
 
   // ── PWA service worker ─────────────────────────────────────
@@ -859,14 +875,14 @@
     showLastAction();
     showToast('✓ Session updated');
 
-    // Sync to Sheets with full HH:mm:ss
+    // Sync to Sheets with full HH:mm:ss + sheetRow so edits hit the right row
     if(inP){
       const t = `${pad(inP.h)}:${pad(inP.m)}:${pad(inP.sec)}`;
-      syncToSheets({ date: s.date, time: t, action: 'IN_EDIT', sessionIndex: i });
+      syncToSheets({ date: s.date, time: t, action: 'IN_EDIT', sheetRow: s.sheetRow });
     }
     if(outP){
       const t = `${pad(outP.h)}:${pad(outP.m)}:${pad(outP.sec)}`;
-      syncToSheets({ date: s.date, time: t, action: 'OUT_EDIT', sessionIndex: i });
+      syncToSheets({ date: s.date, time: t, action: 'OUT_EDIT', sheetRow: s.sheetRow });
     }
   }
 
