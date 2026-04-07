@@ -295,7 +295,7 @@
     /* History button */
     .history-btn {
       position: fixed;
-      bottom: 200px;
+      bottom: 28px;
       right: 24px;
       width: 44px;
       height: 44px;
@@ -415,21 +415,38 @@
       margin-bottom: 4px;
     }
 
-    .time-field input[type="time"] {
-      width: 100%;
+    .time-parts {
+      display: flex;
+      align-items: center;
+      gap: 2px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
+      padding: 6px 8px;
+      transition: border-color 0.2s;
+    }
+    .time-parts:focus-within { border-color: var(--green); }
+
+    .time-parts input[type="number"] {
+      width: 26px;
+      background: transparent;
+      border: none;
       color: var(--text);
       font-family: 'Space Mono', monospace;
       font-size: 14px;
-      padding: 8px 10px;
+      text-align: center;
       outline: none;
-      -webkit-appearance: none;
-      transition: border-color 0.2s;
+      -moz-appearance: textfield;
+      padding: 0;
     }
-    .time-field input[type="time"]:focus {
-      border-color: var(--green);
+    .time-parts input[type="number"]::-webkit-inner-spin-button,
+    .time-parts input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+    .time-sep {
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      font-size: 14px;
+      user-select: none;
     }
 
     .session-footer {
@@ -713,9 +730,13 @@
       const i = sessions.length - 1 - ri; // real index
       const inT  = s.inTime  ? new Date(s.inTime)  : null;
       const outT = s.outTime ? new Date(s.outTime) : null;
-      const inVal  = inT  ? `${pad(inT.getHours())}:${pad(inT.getMinutes())}:${pad(inT.getSeconds())}` : '';
-      const outVal = outT ? `${pad(outT.getHours())}:${pad(outT.getMinutes())}:${pad(outT.getSeconds())}` : '';
-      const dur = s.durationSec ? secsToHMS(s.durationSec) : (s.outTime ? '—' : 'running...');
+      const inH  = inT  ? pad(inT.getHours())   : '';
+      const inM  = inT  ? pad(inT.getMinutes()) : '';
+      const inS  = inT  ? pad(inT.getSeconds()) : '';
+      const outH = outT ? pad(outT.getHours())   : '';
+      const outM = outT ? pad(outT.getMinutes()) : '';
+      const outS = outT ? pad(outT.getSeconds()) : '';
+      const dur  = s.durationSec ? secsToHMS(s.durationSec) : (s.outTime ? '—' : 'running...');
 
       return `
         <div class="session-item" id="sess-${i}">
@@ -723,11 +744,23 @@
           <div class="session-times">
             <div class="time-field">
               <label>Clock IN</label>
-              <input type="time" id="in-${i}" value="${inVal}" step="1" />
+              <div class="time-parts">
+                <input type="number" id="in-h-${i}" value="${inH}" min="0" max="23" placeholder="HH">
+                <span class="time-sep">:</span>
+                <input type="number" id="in-m-${i}" value="${inM}" min="0" max="59" placeholder="mm">
+                <span class="time-sep">:</span>
+                <input type="number" id="in-s-${i}" value="${inS}" min="0" max="59" placeholder="ss">
+              </div>
             </div>
             <div class="time-field">
               <label>Clock OUT</label>
-              <input type="time" id="out-${i}" value="${outVal}" step="1" />
+              <div class="time-parts">
+                <input type="number" id="out-h-${i}" value="${outH}" min="0" max="23" placeholder="HH">
+                <span class="time-sep">:</span>
+                <input type="number" id="out-m-${i}" value="${outM}" min="0" max="59" placeholder="mm">
+                <span class="time-sep">:</span>
+                <input type="number" id="out-s-${i}" value="${outS}" min="0" max="59" placeholder="ss">
+              </div>
             </div>
           </div>
           <div class="session-footer">
@@ -742,30 +775,28 @@
   }
 
   function saveSession(i){
-    const inInput  = document.getElementById(`in-${i}`).value;  // "HH:mm" or "HH:mm:ss"
-    const outInput = document.getElementById(`out-${i}`).value;
     const s = sessions[i];
 
-    function parseTimeParts(val){
-      const parts = val.split(':');
-      return { h: +parts[0], m: +parts[1], sec: parts[2] ? +parts[2] : 0 };
+    function readParts(prefix){
+      const h   = document.getElementById(`${prefix}-h-${i}`).value;
+      const m   = document.getElementById(`${prefix}-m-${i}`).value;
+      const sec = document.getElementById(`${prefix}-s-${i}`).value;
+      // Only valid if at least h and m are filled
+      if(h === '' || m === '') return null;
+      return { h: +h, m: +m, sec: sec === '' ? 0 : +sec };
     }
 
-    function toTimeString(val){
-      const {h,m,sec} = parseTimeParts(val);
-      return `${pad(h)}:${pad(m)}:${pad(sec)}`;
-    }
+    const inP  = readParts('in');
+    const outP = readParts('out');
 
-    if(inInput){
-      const {h,m,sec} = parseTimeParts(inInput);
+    if(inP){
       const base = new Date(s.inTime || s.date);
-      base.setHours(h, m, sec, 0);
+      base.setHours(inP.h, inP.m, inP.sec, 0);
       s.inTime = base.toISOString();
     }
-    if(outInput){
-      const {h,m,sec} = parseTimeParts(outInput);
+    if(outP){
       const base = new Date(s.outTime || s.inTime || s.date);
-      base.setHours(h, m, sec, 0);
+      base.setHours(outP.h, outP.m, outP.sec, 0);
       s.outTime = base.toISOString();
     }
 
@@ -780,12 +811,14 @@
     showLastAction();
     showToast('✓ Session updated');
 
-    // Sync edit to Sheets — always send proper HH:mm:ss
-    if(inInput){
-      syncToSheets({ date: s.date, time: toTimeString(inInput), action: 'IN_EDIT', sessionIndex: i });
+    // Sync to Sheets with full HH:mm:ss
+    if(inP){
+      const t = `${pad(inP.h)}:${pad(inP.m)}:${pad(inP.sec)}`;
+      syncToSheets({ date: s.date, time: t, action: 'IN_EDIT', sessionIndex: i });
     }
-    if(outInput){
-      syncToSheets({ date: s.date, time: toTimeString(outInput), action: 'OUT_EDIT', sessionIndex: i });
+    if(outP){
+      const t = `${pad(outP.h)}:${pad(outP.m)}:${pad(outP.sec)}`;
+      syncToSheets({ date: s.date, time: t, action: 'OUT_EDIT', sessionIndex: i });
     }
   }
 
