@@ -706,17 +706,55 @@
     navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }
 
-  // ── Time input auto-advance (HH→mm→ss) ───────────────────────
+  // ── Time input validation + auto-advance (HH→mm→ss) ──────────
   document.addEventListener('input', e => {
     const el = e.target;
     if(el.tagName !== 'INPUT' || el.type !== 'text') return;
+
     // Strip non-digits
-    el.value = el.value.replace(/\D/g,'');
-    if(el.value.length >= 2 && el.nextElementSibling && el.nextElementSibling.nextElementSibling){
-      el.nextElementSibling.nextElementSibling.focus();
-      el.nextElementSibling.nextElementSibling.select();
+    el.value = el.value.replace(/[^0-9]/g, '');
+
+    // Clamp on 2 digits entered
+    if(el.value.length >= 2){
+      const id = el.id || '';
+      let val = parseInt(el.value, 10);
+      if(id.startsWith('in-h-') || id.startsWith('out-h-')){
+        if(val > 23){ el.value = '23'; val = 23; }
+      } else {
+        if(val > 59){ el.value = '59'; val = 59; }
+      }
+      el.value = String(val).padStart(2, '0');
+
+      // Auto-advance to next field
+      const next = el.nextElementSibling && el.nextElementSibling.nextElementSibling;
+      if(next && next.tagName === 'INPUT'){
+        next.focus();
+        next.select();
+      }
     }
+
+    // Visual error if still invalid (shouldn't happen but safety net)
+    const parts = el.closest('.time-parts');
+    if(parts) parts.style.borderColor = '';
   });
+
+  // Validate on blur (handles partial input like typing just "6" and leaving)
+  document.addEventListener('blur', e => {
+    const el = e.target;
+    if(el.tagName !== 'INPUT' || el.type !== 'text') return;
+    if(el.value === '') return;
+
+    const id = el.id || '';
+    let val = parseInt(el.value, 10);
+    if(isNaN(val)) { el.value = '00'; return; }
+
+    if(id.startsWith('in-h-') || id.startsWith('out-h-')){
+      val = Math.min(23, Math.max(0, val));
+    } else {
+      val = Math.min(59, Math.max(0, val));
+    }
+    el.value = String(val).padStart(2, '0');
+  }, true);
 
   // ── History Drawer ─────────────────────────────────────────
   function openDrawer(){
