@@ -9,7 +9,7 @@
   <title>Office Tracker</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg: #0a0a0f;
@@ -25,7 +25,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
-      font-family: 'Space Mono', monospace;
+      font-family: 'DM Mono', monospace;
       background: var(--bg);
       color: var(--text);
       min-height: 100dvh;
@@ -33,7 +33,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 48px 24px 40px;
+      padding: 32px 20px 24px;
       overflow: hidden;
     }
 
@@ -65,7 +65,7 @@
     }
 
     .app-name {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.2em;
@@ -106,14 +106,14 @@
 
     /* Clock display */
     .clock-section {
-      text-align: center;
+      text-align: left;
       position: relative;
       z-index: 1;
     }
 
     .live-time {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(48px, 16vw, 72px);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: clamp(38px, 12vw, 58px);
       font-weight: 800;
       letter-spacing: -0.02em;
       line-height: 1;
@@ -135,8 +135,8 @@
     }
 
     .main-btn {
-      width: 200px;
-      height: 200px;
+      width: 168px;
+      height: 168px;
       border-radius: 50%;
       border: none;
       cursor: pointer;
@@ -189,8 +189,8 @@
     }
 
     .btn-label {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 19px;
       font-weight: 800;
       letter-spacing: 0.05em;
       color: var(--green);
@@ -227,52 +227,82 @@
       to   { transform: scale(1.4); opacity: 0; }
     }
 
-    /* Stats bottom */
-    .stats {
+    /* Bottom section */
+    .bottom-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .history-trigger {
+      align-self: flex-end;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .history-trigger:active { opacity: 0.6; transform: scale(0.94); }
+    .history-trigger:hover { border-color: var(--green); }
+    .hamburger-line {
+      display: block;
+      width: 18px;
+      height: 2px;
+      background: var(--subtext);
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+    .history-trigger:hover .hamburger-line { background: var(--green); }
+
+    .stats-grid {
       width: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      position: relative;
-      z-index: 1;
+      gap: 8px;
     }
 
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 12px 10px;
+      text-align: left;
+    }
+
+    .estimate-card {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
     }
 
     .stat-label {
-      font-size: 10px;
-      letter-spacing: 0.18em;
+      font-size: 9px;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--subtext);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .stat-value {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text);
     }
 
     .stat-value.green { color: var(--green); }
     .stat-value.orange { color: var(--orange); }
-
-    .last-action {
-      grid-column: 1 / -1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .last-action .stat-value {
-      font-size: 13px;
-      color: var(--subtext);
-    }
 
     /* Toast */
     .toast {
@@ -292,23 +322,146 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
+    .estimate-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .estimate-label {
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--subtext);
+    }
+    .estimate-edit-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .estimate-edit-btn:active { opacity: 0.6; transform: scale(0.9); }
+    .estimate-edit-btn:hover { border-color: var(--green); color: var(--green); }
+    .estimate-numbers {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .estimate-actual { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--green); }
+    .estimate-sep { color: var(--muted); font-size: 12px; margin: 0 5px; }
+    .estimate-target { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); }
+    .estimate-diff { font-size: 10px; letter-spacing: 0.05em; }
+    .estimate-diff.ahead { color: var(--green); }
+    .estimate-diff.behind { color: var(--orange); }
+    .progress-track {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--green);
+      transition: width 0.6s ease;
+    }
+    .progress-fill.behind { background: var(--orange); }
+
+    /* Calendar drawer */
+    .cal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 50;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .cal-overlay.open { opacity: 1; pointer-events: all; }
+    .cal-drawer {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: 24px 24px 0 0;
+      z-index: 51;
+      padding: 0 0 40px;
+      max-height: 88dvh;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+    }
+    .cal-drawer.open { transform: translateY(0); }
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px 12px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .cal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); }
+    .cal-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 4px; }
+    .cal-legend {
+      display: flex; gap: 12px; padding: 10px 20px;
+      flex-shrink: 0; flex-wrap: wrap;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--subtext); letter-spacing: 0.1em; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .legend-dot.work { background: var(--border); }
+    .legend-dot.holiday { background: var(--orange); }
+    .legend-dot.half { background: #f5a623; }
+    .legend-dot.weekend { background: var(--muted); opacity: 0.4; }
+    .legend-dot.worked-weekend { background: var(--green); }
+    .cal-grid-wrap { overflow-y: auto; flex: 1; padding: 8px 16px 16px; }
+    .cal-dow-row {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      margin-bottom: 4px;
+    }
+    .cal-dow { text-align: left; font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; padding: 4px 0; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .cal-day.empty { pointer-events: none; }
+    .cal-day.weekend { color: var(--muted); opacity: 0.5; }
+    .cal-day.future { color: var(--muted); opacity: 0.5; pointer-events: none; }
+    .cal-day.work { background: var(--bg); border-color: var(--border); color: var(--text); }
+    .cal-day.holiday { background: rgba(255,107,53,0.15); border-color: var(--orange); color: var(--orange); }
+    .cal-day.half { background: rgba(245,166,35,0.15); border-color: #f5a623; color: #f5a623; }
+    .cal-day.today-marker { border-color: var(--green) !important; }
+    .cal-day.worked-weekend { background: rgba(0,245,160,0.1); border-color: var(--green); color: var(--green); opacity: 1; }
+    .cal-day:active { transform: scale(0.9); }
+
     /* History button */
     .history-btn {
-      position: fixed;
-      bottom: 200px;
-      right: 24px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--subtext);
-      font-size: 18px;
+      font-size: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
       transition: border-color 0.2s, color 0.2s;
     }
     .history-btn:active { transform: scale(0.92); }
@@ -359,7 +512,7 @@
     }
 
     .drawer-title {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 16px;
       font-weight: 700;
       color: var(--text);
@@ -432,9 +585,9 @@
       background: transparent;
       border: none;
       color: var(--text);
-      font-family: 'Space Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 14px;
-      text-align: center;
+      text-align: left;
       outline: none;
       -moz-appearance: textfield;
       padding: 0;
@@ -443,7 +596,7 @@
 
     .time-sep {
       color: var(--muted);
-      font-family: 'Space Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 14px;
       user-select: none;
     }
@@ -455,7 +608,7 @@
     }
 
     .session-duration {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 13px;
       font-weight: 700;
       color: var(--green);
@@ -470,7 +623,7 @@
       border: none;
       border-radius: 8px;
       padding: 6px 14px;
-      font-family: 'Space Mono', monospace;
+      font-family: 'DM Mono', monospace;
       font-size: 11px;
       cursor: pointer;
       transition: opacity 0.2s;
@@ -480,7 +633,7 @@
     .btn-save:active, .btn-delete:active { opacity: 0.7; }
 
     .empty-history {
-      text-align: center;
+      text-align: left;
       color: var(--muted);
       font-size: 13px;
       padding: 40px 20px;
@@ -514,25 +667,74 @@
     </button>
   </div>
 
-  <div class="stats">
-    <div class="stat-card">
-      <div class="stat-label">Today</div>
-      <div class="stat-value green" id="todayHours">00:00:00</div>
+  <!-- Bottom section -->
+  <div class="bottom-section">
+    <button class="history-trigger" onclick="openDrawer()" title="Session history">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Today</div>
+        <div class="stat-value green" id="todayHours">00:00:00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Last Action</div>
+        <div class="stat-value" id="lastAction">—</div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">This Month</div>
-      <div class="stat-value" id="monthHours">00:00:00</div>
-    </div>
-    <div class="stat-card last-action">
-      <div class="stat-label">Last Action</div>
-      <div class="stat-value" id="lastAction">—</div>
+    <div class="estimate-card">
+      <div class="estimate-row">
+        <span class="estimate-label">Monthly Estimate</span>
+        <button class="estimate-edit-btn" onclick="openCalDrawer()" title="Edit working days">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </button>
+      </div>
+      <div class="estimate-numbers">
+        <div>
+          <span class="estimate-actual" id="estActual">00:00</span>
+          <span class="estimate-sep">/</span>
+          <span class="estimate-target" id="estTarget">00:00</span>
+        </div>
+        <span class="estimate-diff" id="estDiff"></span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="estProgress" style="width:0%"></div>
+      </div>
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
-  <!-- History button -->
-  <button class="history-btn" onclick="openDrawer()" title="Edit history">&#9776;</button>
+  <!-- Calendar drawer -->
+  <div class="cal-overlay" id="calOverlay" onclick="closeCalDrawer()"></div>
+  <div class="cal-drawer" id="calDrawer">
+    <div class="drawer-handle"></div>
+    <div class="cal-header">
+      <span class="cal-title" id="calTitle">Edit Working Days</span>
+      <button class="cal-close" onclick="closeCalDrawer()">&#x2715;</button>
+    </div>
+    <div class="cal-legend">
+      <div class="legend-item"><div class="legend-dot work"></div>WORKING</div>
+      <div class="legend-item"><div class="legend-dot holiday"></div>HOLIDAY</div>
+      <div class="legend-item"><div class="legend-dot half"></div>HALF DAY</div>
+      <div class="legend-item"><div class="legend-dot weekend"></div>WEEKEND (OFF)</div>
+      <div class="legend-item"><div class="legend-dot worked-weekend"></div>WORKED</div>
+    </div>
+    <div class="cal-grid-wrap">
+      <div class="cal-dow-row">
+        <div class="cal-dow">Su</div><div class="cal-dow">Mo</div>
+        <div class="cal-dow">Tu</div><div class="cal-dow">We</div>
+        <div class="cal-dow">Th</div><div class="cal-dow">Fr</div>
+        <div class="cal-dow">Sa</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+
 
   <!-- History drawer -->
   <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
@@ -597,7 +799,7 @@
     }
 
     document.getElementById('todayHours').textContent  = secsToHMS(todaySec);
-    document.getElementById('monthHours').textContent  = secsToHMS(monthSec);
+    const mhEl = document.getElementById('monthHours'); if(mhEl) mhEl.textContent = secsToHMS(monthSec);
   }
   setInterval(calcStats, 1000);
 
@@ -726,6 +928,183 @@
       }
       sendOut(6); // retry up to 6x = 3 seconds wait
     }
+  }
+
+  // ── Estimate & Calendar ────────────────────────────────────────
+  // dayOverrides: { "YYYY-M-D": "holiday" | "half" | "work" }
+  let dayOverrides = JSON.parse(localStorage.getItem('dayOverrides') || '{}');
+
+  function saveDayOverrides(){ localStorage.setItem('dayOverrides', JSON.stringify(dayOverrides)); }
+
+  function getDayKey(date){ return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`; }
+
+  // Count working days from start of month up to today (inclusive)
+  // Returns total expected hours based on overrides
+  function calcExpectedHours(){
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    let hours = 0;
+    const d = new Date(year, month, 1);
+    while(d.getMonth() === month && d <= now){
+      const dow = d.getDay(); // 0=Sun, 6=Sat
+      const key = getDayKey(d);
+      const override = dayOverrides[key];
+      const isWeekend = dow === 0 || dow === 6;
+
+      if(isWeekend){
+        if(override === 'worked')       hours += 8;
+        else if(override === 'half')    hours += 4;
+        // holiday or no override = 0 for weekends
+      } else {
+        if(override === 'holiday')      hours += 0;
+        else if(override === 'half')    hours += 4;
+        else                            hours += 8;
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    return hours;
+  }
+
+  function updateEstimate(){
+    // Get actual month seconds
+    const month = monthKey();
+    let monthSec = 0;
+    sessions.forEach(s => {
+      if(s.durationSec){
+        const d = new Date(s.inTime);
+        if(`${d.getFullYear()}-${d.getMonth()}` === month) monthSec += s.durationSec;
+      }
+    });
+    if(isClockedIn && clockInTime){
+      monthSec += (Date.now() - clockInTime.getTime()) / 1000;
+    }
+
+    const expectedHrs = calcExpectedHours();
+    const expectedSec = expectedHrs * 3600;
+    const actualHrs   = monthSec / 3600;
+    const diffSec     = monthSec - expectedSec;
+
+    // Format as h:mm
+    function hhmm(secs){
+      const abs = Math.abs(secs);
+      const h = Math.floor(abs/3600);
+      const m = Math.floor((abs%3600)/60);
+      return `${h}:${pad(m)}`;
+    }
+
+    document.getElementById('estActual').textContent = hhmm(monthSec);
+    document.getElementById('estTarget').textContent = hhmm(expectedSec);
+
+    const diffEl = document.getElementById('estDiff');
+    const progEl = document.getElementById('estProgress');
+
+    if(expectedSec === 0){
+      diffEl.textContent = '';
+      progEl.style.width = '0%';
+    } else {
+      const pct = Math.min(100, (monthSec / expectedSec) * 100).toFixed(1);
+      progEl.style.width = pct + '%';
+      if(diffSec >= 0){
+        diffEl.textContent = `+${hhmm(diffSec)} ahead`;
+        diffEl.className = 'estimate-diff ahead';
+        progEl.className = 'progress-fill';
+      } else {
+        diffEl.textContent = `-${hhmm(diffSec)} behind`;
+        diffEl.className = 'estimate-diff behind';
+        progEl.className = 'progress-fill behind';
+      }
+    }
+  }
+
+  setInterval(updateEstimate, 1000);
+  updateEstimate();
+
+  // ── Calendar drawer ──────────────────────────────────────────
+  function openCalDrawer(){
+    renderCalendar();
+    document.getElementById('calDrawer').classList.add('open');
+    document.getElementById('calOverlay').classList.add('open');
+  }
+
+  function closeCalDrawer(){
+    document.getElementById('calDrawer').classList.remove('open');
+    document.getElementById('calOverlay').classList.remove('open');
+    updateEstimate();
+  }
+
+  function renderCalendar(){
+    const now   = new Date();
+    const year  = now.getFullYear();
+    const month = now.getMonth();
+    const today = now.getDate();
+
+    // Month name
+    document.getElementById('calTitle').textContent =
+      now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+
+    const grid = document.getElementById('calGrid');
+    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    let html = '';
+    // Empty cells before first day
+    for(let i = 0; i < firstDay; i++){
+      html += `<div class="cal-day empty"></div>`;
+    }
+
+    for(let d = 1; d <= daysInMonth; d++){
+      const date  = new Date(year, month, d);
+      const dow   = date.getDay();
+      const key   = getDayKey(date);
+      const over  = dayOverrides[key];
+      const isTod = d === today;
+      const isFut = d > today;
+
+      const isWeekend = dow === 0 || dow === 6;
+      let cls = 'cal-day';
+
+      if(isFut && isWeekend)            cls += ' weekend future';
+      else if(isFut)                    cls += ' future';
+      else if(over === 'worked')        cls += ' worked-weekend';
+      else if(over === 'holiday')       cls += ' holiday';
+      else if(over === 'half')          cls += ' half';
+      else if(isWeekend)                cls += ' weekend';
+      else                              cls += ' work';
+
+      if(isTod) cls += ' today-marker';
+
+      let label;
+      if(over === 'holiday')       label = '✕';
+      else if(over === 'half')     label = '½';
+      else if(over === 'worked')   label = '✓';
+      else                         label = d;
+
+      html += `<div class="${cls}" onclick="toggleDay('${key}',${dow},${isFut})">${label}</div>`;
+    }
+
+    grid.innerHTML = html;
+  }
+
+  function toggleDay(key, dow, isFuture){
+    if(isFuture) return;
+    const cur = dayOverrides[key];
+    const isWeekend = dow === 0 || dow === 6;
+
+    if(isWeekend){
+      // Weekends cycle: off → worked(✓) → half(½) → off
+      if(!cur){                        dayOverrides[key] = 'worked'; }
+      else if(cur === 'worked'){        dayOverrides[key] = 'half'; }
+      else {                            delete dayOverrides[key]; }
+    } else {
+      // Weekdays cycle: work → holiday(✕) → half(½) → work
+      if(!cur || cur === 'work'){       dayOverrides[key] = 'holiday'; }
+      else if(cur === 'holiday'){       dayOverrides[key] = 'half'; }
+      else {                            delete dayOverrides[key]; }
+    }
+    saveDayOverrides();
+    renderCalendar();
+    updateEstimate();
   }
 
   // ── PWA service worker ─────────────────────────────────────
