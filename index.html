@@ -784,22 +784,26 @@
     let todaySec = 0, monthSec = 0;
 
     sessions.forEach(s => {
-      if(s.durationSec){
+      // Use durationSec for completed sessions; skip current running one (handled below)
+      if(s.durationSec && s.outTime){
         if(s.date === today) todaySec += s.durationSec;
         const d = new Date(s.inTime);
         if(`${d.getFullYear()}-${d.getMonth()}` === month) monthSec += s.durationSec;
       }
     });
 
-    // Add live running time if clocked in
+    // Add live running time for the current open session
     if(isClockedIn && clockInTime){
       const live = (Date.now() - clockInTime.getTime()) / 1000;
-      todaySec  += live;
-      monthSec  += live;
+      const now = new Date();
+      if(now.toLocaleDateString() === today) todaySec += live;
+      const mk = `${now.getFullYear()}-${now.getMonth()}`;
+      if(mk === month) monthSec += live;
     }
 
-    document.getElementById('todayHours').textContent  = secsToHMS(todaySec);
-    const mhEl = document.getElementById('monthHours'); if(mhEl) mhEl.textContent = secsToHMS(monthSec);
+    document.getElementById('todayHours').textContent = secsToHMS(todaySec);
+    const mhEl = document.getElementById('monthHours');
+    if(mhEl) mhEl.textContent = secsToHMS(monthSec);
   }
   setInterval(calcStats, 1000);
 
@@ -873,10 +877,18 @@
       sessions.push({ date: now.toLocaleDateString(), inTime: now.toISOString(), outTime: null, durationSec: 0 });
     } else {
       const last = sessions[sessions.length-1];
-      if(last && !last.outTime){
-        last.outTime = now.toISOString();
-        last.durationSec = Math.floor((now - new Date(last.inTime)) / 1000);
+      // Guard: if there's no open session (e.g. it was deleted), abort the OUT
+      if(!last || last.outTime){
+        isClockedIn = false;
+        clockInTime = null;
+        localStorage.setItem('isClockedIn', 'false');
+        localStorage.removeItem('clockInTime');
+        updateUI();
+        showToast('No open session found — state reset');
+        return;
       }
+      last.outTime = now.toISOString();
+      last.durationSec = Math.floor((now - new Date(last.inTime)) / 1000);
       clockInTime = null;
       localStorage.removeItem('clockInTime');
     }
@@ -973,13 +985,16 @@
     const month = monthKey();
     let monthSec = 0;
     sessions.forEach(s => {
-      if(s.durationSec){
+      if(s.durationSec && s.outTime){
         const d = new Date(s.inTime);
         if(`${d.getFullYear()}-${d.getMonth()}` === month) monthSec += s.durationSec;
       }
     });
+    // Add live running time for current open session
     if(isClockedIn && clockInTime){
-      monthSec += (Date.now() - clockInTime.getTime()) / 1000;
+      const now = new Date();
+      const mk = `${now.getFullYear()}-${now.getMonth()}`;
+      if(mk === month) monthSec += (Date.now() - clockInTime.getTime()) / 1000;
     }
 
     const expectedHrs = calcExpectedHours();
@@ -1246,20 +1261,30 @@
     const outP = readParts('out');
 
     if(inP){
-      const base = new Date(s.inTime || s.date);
+      const base = new Date(s.inTime || new Date().toISOString());
       base.setHours(inP.h, inP.m, inP.sec, 0);
       s.inTime = base.toISOString();
+      // Sync clockInTime if this is the currently running session
+      if(isClockedIn && !s.outTime){
+        clockInTime = base;
+        localStorage.setItem('clockInTime', base.toISOString());
+      }
     }
     if(outP){
-      const base = new Date(s.outTime || s.inTime || s.date);
+      const base = new Date(s.outTime || s.inTime || new Date().toISOString());
       base.setHours(outP.h, outP.m, outP.sec, 0);
       s.outTime = base.toISOString();
     }
 
     // Recalc duration
     if(s.inTime && s.outTime){
-      s.durationSec = Math.max(0, Math.floor((new Date(s.outTime) - new Date(s.inTime)) / 1000));
+      const diff = new Date(s.outTime) - new Date(s.inTime);
+      s.durationSec = Math.max(0, Math.floor(diff / 1000));
       document.getElementById(`dur-${i}`).textContent = secsToHMS(s.durationSec);
+    } else if(!s.outTime){
+      // Still running — reset durationSec so it doesn't show stale value
+      s.durationSec = 0;
+      document.getElementById(`dur-${i}`).textContent = 'running...';
     }
 
     localStorage.setItem('sessions', JSON.stringify(sessions));
@@ -1281,10 +1306,21 @@
   function deleteSession(i){
     if(!confirm('Delete this session?')) return;
     const s = sessions[i];
+
     // Tell Sheets to clear this row before removing locally
     if(s.sheetRow){
       syncToSheets({ action: 'DELETE', sheetRow: s.sheetRow });
     }
+
+    // If deleting the currently running session, reset clock state
+    if(!s.outTime && isClockedIn){
+      isClockedIn = false;
+      clockInTime = null;
+      localStorage.setItem('isClockedIn', 'false');
+      localStorage.removeItem('clockInTime');
+      updateUI();
+    }
+
     sessions.splice(i, 1);
     localStorage.setItem('sessions', JSON.stringify(sessions));
     calcStats();
