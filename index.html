@@ -1304,21 +1304,19 @@
   }
 
   function deleteSession(i){
-    if(!confirm('Delete this session?')) return;
     const s = sessions[i];
 
-    // Tell Sheets to clear this row before removing locally
-    if(s.sheetRow){
-      syncToSheets({ action: 'DELETE', sheetRow: s.sheetRow });
+    // Block deletion if session is still running (no OUT yet)
+    if(!s.outTime){
+      showToast('⚠ Clock out first before deleting', 3000);
+      return;
     }
 
-    // If deleting the currently running session, reset clock state
-    if(!s.outTime && isClockedIn){
-      isClockedIn = false;
-      clockInTime = null;
-      localStorage.setItem('isClockedIn', 'false');
-      localStorage.removeItem('clockInTime');
-      updateUI();
+    if(!confirm('Delete this session?')) return;
+
+    // Tell Sheets to clear this row
+    if(s.sheetRow){
+      syncToSheets({ action: 'DELETE', sheetRow: s.sheetRow });
     }
 
     sessions.splice(i, 1);
