@@ -821,9 +821,11 @@
   // ── Last action display ────────────────────────────────────
   function showLastAction(){
     const last = sessions[sessions.length-1];
-    if(!last) return;
-    const t = new Date(last.inTime||last.outTime||last.inTime);
-    const action = last.outTime ? 'OUT' : 'IN';
+    if(!last){ document.getElementById('lastAction').textContent = '—'; return; }
+    // If clocked out, last action is OUT; otherwise it's IN
+    const isOut = !!last.outTime;
+    const t = new Date(isOut ? last.outTime : last.inTime);
+    const action = isOut ? 'OUT' : 'IN';
     document.getElementById('lastAction').textContent =
       `${action} · ${pad(t.getHours())}:${pad(t.getMinutes())}`;
   }
@@ -1278,6 +1280,11 @@
 
   function deleteSession(i){
     if(!confirm('Delete this session?')) return;
+    const s = sessions[i];
+    // Tell Sheets to clear this row before removing locally
+    if(s.sheetRow){
+      syncToSheets({ action: 'DELETE', sheetRow: s.sheetRow });
+    }
     sessions.splice(i, 1);
     localStorage.setItem('sessions', JSON.stringify(sessions));
     calcStats();
