@@ -8,8 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Office Tracker</title>
   <link rel="manifest" href="manifest.json" />
+  <!-- Fonts loaded async to avoid blocking on slow networks -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <style>
     :root {
       --bg: #0a0a0f;
@@ -21,9 +23,9 @@
       --text: #e8e8f0;
       --subtext: #7a7a9a;
     }
-
+ 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
+ 
     body {
       font-family: 'DM Mono', monospace;
       background: var(--bg);
@@ -36,7 +38,7 @@
       padding: 32px 20px 24px;
       overflow: hidden;
     }
-
+ 
     /* Ambient glow background */
     body::before {
       content: '';
@@ -54,7 +56,7 @@
     body.clocked-in::before {
       background: radial-gradient(circle, rgba(255,107,53,0.07) 0%, transparent 70%);
     }
-
+ 
     .header {
       width: 100%;
       display: flex;
@@ -63,7 +65,7 @@
       position: relative;
       z-index: 1;
     }
-
+ 
     .app-name {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 13px;
@@ -72,7 +74,7 @@
       text-transform: uppercase;
       color: var(--muted);
     }
-
+ 
     .sync-indicator {
       display: flex;
       align-items: center;
@@ -81,7 +83,7 @@
       color: var(--muted);
       letter-spacing: 0.08em;
     }
-
+ 
     .sync-dot {
       width: 6px;
       height: 6px;
@@ -89,28 +91,28 @@
       background: var(--muted);
       transition: background 0.3s;
     }
-
+ 
     .sync-dot.syncing {
       background: var(--green);
       animation: pulse 1s infinite;
     }
-
+ 
     .sync-dot.error {
       background: var(--orange);
     }
-
+ 
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
-
+ 
     /* Clock display */
     .clock-section {
       text-align: left;
       position: relative;
       z-index: 1;
     }
-
+ 
     .live-time {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: clamp(38px, 12vw, 58px);
@@ -119,7 +121,7 @@
       line-height: 1;
       color: var(--text);
     }
-
+ 
     .live-date {
       margin-top: 8px;
       font-size: 12px;
@@ -127,13 +129,13 @@
       letter-spacing: 0.15em;
       text-transform: uppercase;
     }
-
+ 
     /* Main button */
     .btn-wrap {
       position: relative;
       z-index: 1;
     }
-
+ 
     .main-btn {
       width: 168px;
       height: 168px;
@@ -145,7 +147,7 @@
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
-
+ 
     .btn-ring {
       position: absolute;
       inset: 0;
@@ -153,7 +155,7 @@
       border: 2px solid var(--green);
       transition: border-color 0.4s ease, transform 0.15s ease;
     }
-
+ 
     .btn-ring::before {
       content: '';
       position: absolute;
@@ -162,14 +164,14 @@
       border: 1px solid rgba(0,245,160,0.2);
       transition: border-color 0.4s ease;
     }
-
+ 
     .clocked-in .btn-ring {
       border-color: var(--orange);
     }
     .clocked-in .btn-ring::before {
       border-color: rgba(255,107,53,0.2);
     }
-
+ 
     .btn-inner {
       position: absolute;
       inset: 16px;
@@ -183,11 +185,11 @@
       gap: 6px;
       transition: background 0.3s, transform 0.15s;
     }
-
+ 
     .main-btn:active .btn-inner {
       transform: scale(0.94);
     }
-
+ 
     .btn-label {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 19px;
@@ -196,18 +198,18 @@
       color: var(--green);
       transition: color 0.4s;
     }
-
+ 
     .clocked-in .btn-label {
       color: var(--orange);
     }
-
+ 
     .btn-sub {
       font-size: 10px;
       color: var(--muted);
       letter-spacing: 0.15em;
       text-transform: uppercase;
     }
-
+ 
     /* Ripple on tap */
     .ripple {
       position: absolute;
@@ -226,7 +228,7 @@
       from { transform: scale(1); opacity: 0.6; }
       to   { transform: scale(1.4); opacity: 0; }
     }
-
+ 
     /* Bottom section */
     .bottom-section {
       width: 100%;
@@ -236,7 +238,7 @@
       position: relative;
       z-index: 1;
     }
-
+ 
     .history-trigger {
       align-self: flex-end;
       display: flex;
@@ -262,14 +264,14 @@
       transition: background 0.2s;
     }
     .history-trigger:hover .hamburger-line { background: var(--green); }
-
+ 
     .stats-grid {
       width: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
-
+ 
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -277,7 +279,7 @@
       padding: 12px 10px;
       text-align: left;
     }
-
+ 
     .estimate-card {
       width: 100%;
       background: var(--surface);
@@ -285,7 +287,7 @@
       border-radius: 14px;
       padding: 12px 14px;
     }
-
+ 
     .stat-label {
       font-size: 9px;
       letter-spacing: 0.16em;
@@ -293,17 +295,17 @@
       color: var(--subtext);
       margin-bottom: 4px;
     }
-
+ 
     .stat-value {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 14px;
       font-weight: 700;
       color: var(--text);
     }
-
+ 
     .stat-value.green { color: var(--green); }
     .stat-value.orange { color: var(--orange); }
-
+ 
     /* Toast */
     .toast {
       position: fixed;
@@ -321,7 +323,7 @@
       white-space: nowrap;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
-
+ 
     .estimate-row {
       display: flex;
       justify-content: space-between;
@@ -375,7 +377,7 @@
       transition: width 0.6s ease;
     }
     .progress-fill.behind { background: var(--orange); }
-
+ 
     /* Calendar drawer */
     .cal-overlay {
       position: fixed; inset: 0;
@@ -448,7 +450,7 @@
     .cal-day.today-marker { border-color: var(--green) !important; }
     .cal-day.worked-weekend { background: rgba(0,245,160,0.1); border-color: var(--green); color: var(--green); opacity: 1; }
     .cal-day:active { transform: scale(0.9); }
-
+ 
     /* History button */
     .history-btn {
       width: 34px;
@@ -466,7 +468,7 @@
     }
     .history-btn:active { transform: scale(0.92); }
     .history-btn:hover { border-color: var(--green); color: var(--green); }
-
+ 
     /* History drawer */
     .drawer-overlay {
       position: fixed; inset: 0;
@@ -477,7 +479,7 @@
       transition: opacity 0.3s;
     }
     .drawer-overlay.open { opacity: 1; pointer-events: all; }
-
+ 
     .drawer {
       position: fixed;
       bottom: 0; left: 0; right: 0;
@@ -493,7 +495,7 @@
       transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
     }
     .drawer.open { transform: translateY(0); }
-
+ 
     .drawer-handle {
       width: 36px; height: 4px;
       background: var(--border);
@@ -501,7 +503,7 @@
       margin: 12px auto 0;
       flex-shrink: 0;
     }
-
+ 
     .drawer-header {
       display: flex;
       justify-content: space-between;
@@ -510,14 +512,14 @@
       flex-shrink: 0;
       border-bottom: 1px solid var(--border);
     }
-
+ 
     .drawer-title {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 16px;
       font-weight: 700;
       color: var(--text);
     }
-
+ 
     .drawer-close {
       background: none;
       border: none;
@@ -527,7 +529,7 @@
       padding: 4px;
       line-height: 1;
     }
-
+ 
     .session-list {
       overflow-y: auto;
       flex: 1;
@@ -536,14 +538,14 @@
       flex-direction: column;
       gap: 10px;
     }
-
+ 
     .session-item {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 14px 16px;
     }
-
+ 
     .session-date {
       font-size: 10px;
       letter-spacing: 0.15em;
@@ -551,14 +553,14 @@
       color: var(--subtext);
       margin-bottom: 10px;
     }
-
+ 
     .session-times {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
       margin-bottom: 10px;
     }
-
+ 
     .time-field label {
       display: block;
       font-size: 9px;
@@ -567,7 +569,7 @@
       color: var(--muted);
       margin-bottom: 4px;
     }
-
+ 
     .time-parts {
       display: flex;
       align-items: center;
@@ -579,7 +581,7 @@
       transition: border-color 0.2s;
     }
     .time-parts:focus-within { border-color: var(--green); }
-
+ 
     .time-parts input[type="text"] {
       width: 26px;
       background: transparent;
@@ -593,32 +595,32 @@
       padding: 0;
     }
     
-
+ 
     .time-sep {
       color: var(--muted);
       font-family: 'DM Mono', monospace;
       font-size: 14px;
       user-select: none;
     }
-
+ 
     .session-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-
+ 
     .session-duration {
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 13px;
       font-weight: 700;
       color: var(--green);
     }
-
+ 
     .session-actions {
       display: flex;
       gap: 8px;
     }
-
+ 
     .btn-save, .btn-delete {
       border: none;
       border-radius: 8px;
@@ -631,7 +633,7 @@
     .btn-save { background: var(--green); color: #000; font-weight: 700; }
     .btn-delete { background: transparent; color: var(--muted); border: 1px solid var(--border); }
     .btn-save:active, .btn-delete:active { opacity: 0.7; }
-
+ 
     .empty-history {
       text-align: left;
       color: var(--muted);
@@ -642,7 +644,7 @@
   </style>
 </head>
 <body>
-
+ 
   <div class="header">
     <span class="app-name">Office Tracker</span>
     <div class="sync-indicator">
@@ -650,12 +652,12 @@
       <span id="syncLabel">synced</span>
     </div>
   </div>
-
+ 
   <div class="clock-section">
     <div class="live-time" id="liveTime">00:00:00</div>
     <div class="live-date" id="liveDate">---</div>
   </div>
-
+ 
   <div class="btn-wrap">
     <button class="main-btn" id="mainBtn" onclick="handleTap()">
       <div class="btn-ring"></div>
@@ -666,7 +668,7 @@
       </div>
     </button>
   </div>
-
+ 
   <!-- Bottom section -->
   <div class="bottom-section">
     <button class="history-trigger" onclick="openDrawer()" title="Session history">
@@ -706,9 +708,9 @@
       </div>
     </div>
   </div>
-
+ 
   <div class="toast" id="toast"></div>
-
+ 
   <!-- Calendar drawer -->
   <div class="cal-overlay" id="calOverlay" onclick="closeCalDrawer()"></div>
   <div class="cal-drawer" id="calDrawer">
@@ -734,8 +736,8 @@
       <div class="cal-grid" id="calGrid"></div>
     </div>
   </div>
-
-
+ 
+ 
   <!-- History drawer -->
   <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
   <div class="drawer" id="drawer">
@@ -746,25 +748,86 @@
     </div>
     <div class="session-list" id="sessionList"></div>
   </div>
-
+ 
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWNNmVTqWm7qS41Z61l6doL1M1Sz1MGE9E5Vedb7pECWFIakgde5SFeNsG6Psl1POE/exec';
-
+ 
   // ── State ──────────────────────────────────────────────────
   let isClockedIn = localStorage.getItem('isClockedIn') === 'true';
   let clockInTime  = localStorage.getItem('clockInTime') ? new Date(localStorage.getItem('clockInTime')) : null;
-
-  // sessions: [{date, inTime, outTime, durationSec}]
+ 
+  // sessions: [{date, inTime, outTime, durationSec, sheetRow}]
   let sessions = JSON.parse(localStorage.getItem('sessions') || '[]');
-
+ 
+  // ── Sync from Sheets on startup ─────────────────────────────
+  // Show loading state on button
+  document.getElementById('mainBtn').querySelector('.btn-label').textContent = '...';
+  document.getElementById('mainBtn').style.pointerEvents = 'none';
+ 
+  function syncFromSheets(){
+    setSyncState('syncing');
+    // Apps Script GET redirects — must use POST to read data reliably
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'GET_MONTH' })
+    })
+      .then(r => {
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(res => {
+        setSyncState('synced');
+        if(!res.sessions) return;
+        const sheetSessions = res.sessions;
+ 
+        // Replace current month sessions with Sheets data
+        const now = new Date();
+        const currentMonth = now.getFullYear() + '-' + now.getMonth();
+        const otherMonths = sessions.filter(s => {
+          if(!s.inTime) return true;
+          const d = new Date(s.inTime);
+          return (d.getFullYear() + '-' + d.getMonth()) !== currentMonth;
+        });
+        sessions = [...otherMonths, ...sheetSessions];
+        localStorage.setItem('sessions', JSON.stringify(sessions));
+ 
+        // Derive isClockedIn from last session in Sheets
+        const last = sheetSessions.length > 0 ? sheetSessions[sheetSessions.length - 1] : null;
+        if(last && !last.outTime){
+          isClockedIn = true;
+          clockInTime = new Date(last.inTime);
+          localStorage.setItem('isClockedIn', 'true');
+          localStorage.setItem('clockInTime', last.inTime);
+        } else {
+          isClockedIn = false;
+          clockInTime = null;
+          localStorage.setItem('isClockedIn', 'false');
+          localStorage.removeItem('clockInTime');
+        }
+      })
+      .catch(err => {
+        setSyncState('error');
+        console.warn('Sync from Sheets failed:', err);
+        showToast('⚠ Sync error: ' + err.message, 4000);
+      })
+      .finally(() => {
+        updateUI();
+        document.getElementById('mainBtn').style.pointerEvents = '';
+        calcStats();
+        updateEstimate();
+        showLastAction();
+      });
+  }
+ 
   // ── Clock tick ─────────────────────────────────────────────
   function pad(n){ return String(n).padStart(2,'0'); }
-
+ 
   function secsToHMS(s){
     const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
     return `${pad(h)}:${pad(m)}:${pad(sec)}`;
   }
-
+ 
   function tickClock(){
     const now = new Date();
     document.getElementById('liveTime').textContent =
@@ -774,15 +837,15 @@
   }
   setInterval(tickClock, 1000);
   tickClock();
-
+ 
   // ── Stats calculation ──────────────────────────────────────
   function todayKey(){ return new Date().toLocaleDateString(); }
   function monthKey(){ const n=new Date(); return `${n.getFullYear()}-${n.getMonth()}`; }
-
+ 
   function calcStats(){
     const today = todayKey(), month = monthKey();
     let todaySec = 0, monthSec = 0;
-
+ 
     sessions.forEach(s => {
       // Use durationSec for completed sessions; skip current running one (handled below)
       if(s.durationSec && s.outTime){
@@ -791,7 +854,7 @@
         if(`${d.getFullYear()}-${d.getMonth()}` === month) monthSec += s.durationSec;
       }
     });
-
+ 
     // Add live running time for the current open session
     if(isClockedIn && clockInTime){
       const live = (Date.now() - clockInTime.getTime()) / 1000;
@@ -800,13 +863,13 @@
       const mk = `${now.getFullYear()}-${now.getMonth()}`;
       if(mk === month) monthSec += live;
     }
-
+ 
     document.getElementById('todayHours').textContent = secsToHMS(todaySec);
     const mhEl = document.getElementById('monthHours');
     if(mhEl) mhEl.textContent = secsToHMS(monthSec);
   }
   setInterval(calcStats, 1000);
-
+ 
   // ── UI sync ────────────────────────────────────────────────
   function updateUI(){
     const body = document.body;
@@ -819,9 +882,9 @@
       label.textContent = 'IN';
     }
   }
-  updateUI();
-  calcStats();
-
+  // Boot: load from Sheets first, then show UI
+  syncFromSheets();
+ 
   // ── Last action display ────────────────────────────────────
   function showLastAction(){
     const last = sessions[sessions.length-1];
@@ -834,7 +897,7 @@
       `${action} · ${pad(t.getHours())}:${pad(t.getMinutes())}`;
   }
   showLastAction();
-
+ 
   // ── Toast ──────────────────────────────────────────────────
   function showToast(msg, dur=2000){
     const t = document.getElementById('toast');
@@ -842,7 +905,7 @@
     t.classList.add('show');
     setTimeout(()=> t.classList.remove('show'), dur);
   }
-
+ 
   // ── Sync indicator ─────────────────────────────────────────
   function setSyncState(state){ // 'synced'|'syncing'|'error'
     const dot = document.getElementById('syncDot');
@@ -850,7 +913,7 @@
     dot.className = 'sync-dot ' + (state === 'synced' ? '' : state);
     lbl.textContent = state;
   }
-
+ 
   // ── Ripple ─────────────────────────────────────────────────
   function fireRipple(){
     const r = document.getElementById('ripple');
@@ -858,18 +921,18 @@
     void r.offsetWidth; // reflow
     r.classList.add('animate');
   }
-
+ 
   // ── Main tap handler ───────────────────────────────────────
   function handleTap(){
     fireRipple();
     const now   = new Date();
     const action = isClockedIn ? 'OUT' : 'IN';
-
+ 
     // ── 1. Instant UI update (zero delay) ──
     isClockedIn = !isClockedIn;
     localStorage.setItem('isClockedIn', isClockedIn);
     updateUI();
-
+ 
     // ── 2. Update local sessions ──
     if(action === 'IN'){
       clockInTime = now;
@@ -895,9 +958,9 @@
     localStorage.setItem('sessions', JSON.stringify(sessions));
     showLastAction();
     calcStats();
-
+ 
     showToast(`Clocked ${action} · ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`);
-
+ 
     // ── 3. Background sync to Google Sheets ──
     const payload = {
       date: now.toLocaleDateString(),
@@ -905,7 +968,7 @@
       action
     };
     setSyncState('syncing');
-
+ 
     if(action === 'IN'){
       // For IN: fetch so we can read the actual row number back
       fetch(SCRIPT_URL, {
@@ -943,15 +1006,15 @@
       sendOut(6); // retry up to 6x = 3 seconds wait
     }
   }
-
+ 
   // ── Estimate & Calendar ────────────────────────────────────────
   // dayOverrides: { "YYYY-M-D": "holiday" | "half" | "work" }
   let dayOverrides = JSON.parse(localStorage.getItem('dayOverrides') || '{}');
-
+ 
   function saveDayOverrides(){ localStorage.setItem('dayOverrides', JSON.stringify(dayOverrides)); }
-
+ 
   function getDayKey(date){ return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`; }
-
+ 
   // Count working days from start of month up to today (inclusive)
   // Returns total expected hours based on overrides
   function calcExpectedHours(){
@@ -965,7 +1028,7 @@
       const key = getDayKey(d);
       const override = dayOverrides[key];
       const isWeekend = dow === 0 || dow === 6;
-
+ 
       if(isWeekend){
         if(override === 'worked')       hours += 8;
         else if(override === 'half')    hours += 4;
@@ -979,7 +1042,7 @@
     }
     return hours;
   }
-
+ 
   function updateEstimate(){
     // Get actual month seconds
     const month = monthKey();
@@ -996,12 +1059,12 @@
       const mk = `${now.getFullYear()}-${now.getMonth()}`;
       if(mk === month) monthSec += (Date.now() - clockInTime.getTime()) / 1000;
     }
-
+ 
     const expectedHrs = calcExpectedHours();
     const expectedSec = expectedHrs * 3600;
     const actualHrs   = monthSec / 3600;
     const diffSec     = monthSec - expectedSec;
-
+ 
     // Format as h:mm
     function hhmm(secs){
       const abs = Math.abs(secs);
@@ -1009,13 +1072,13 @@
       const m = Math.floor((abs%3600)/60);
       return `${h}:${pad(m)}`;
     }
-
+ 
     document.getElementById('estActual').textContent = hhmm(monthSec);
     document.getElementById('estTarget').textContent = hhmm(expectedSec);
-
+ 
     const diffEl = document.getElementById('estDiff');
     const progEl = document.getElementById('estProgress');
-
+ 
     if(expectedSec === 0){
       diffEl.textContent = '';
       progEl.style.width = '0%';
@@ -1033,43 +1096,43 @@
       }
     }
   }
-
+ 
   setInterval(updateEstimate, 1000);
   updateEstimate();
-
+ 
   // ── Calendar drawer ──────────────────────────────────────────
   function openCalDrawer(){
     renderCalendar();
     document.getElementById('calDrawer').classList.add('open');
     document.getElementById('calOverlay').classList.add('open');
   }
-
+ 
   function closeCalDrawer(){
     document.getElementById('calDrawer').classList.remove('open');
     document.getElementById('calOverlay').classList.remove('open');
     updateEstimate();
   }
-
+ 
   function renderCalendar(){
     const now   = new Date();
     const year  = now.getFullYear();
     const month = now.getMonth();
     const today = now.getDate();
-
+ 
     // Month name
     document.getElementById('calTitle').textContent =
       now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
-
+ 
     const grid = document.getElementById('calGrid');
     const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
+ 
     let html = '';
     // Empty cells before first day
     for(let i = 0; i < firstDay; i++){
       html += `<div class="cal-day empty"></div>`;
     }
-
+ 
     for(let d = 1; d <= daysInMonth; d++){
       const date  = new Date(year, month, d);
       const dow   = date.getDay();
@@ -1077,10 +1140,10 @@
       const over  = dayOverrides[key];
       const isTod = d === today;
       const isFut = d > today;
-
+ 
       const isWeekend = dow === 0 || dow === 6;
       let cls = 'cal-day';
-
+ 
       if(isFut && isWeekend)            cls += ' weekend future';
       else if(isFut)                    cls += ' future';
       else if(over === 'worked')        cls += ' worked-weekend';
@@ -1088,26 +1151,26 @@
       else if(over === 'half')          cls += ' half';
       else if(isWeekend)                cls += ' weekend';
       else                              cls += ' work';
-
+ 
       if(isTod) cls += ' today-marker';
-
+ 
       let label;
       if(over === 'holiday')       label = '✕';
       else if(over === 'half')     label = '½';
       else if(over === 'worked')   label = '✓';
       else                         label = d;
-
+ 
       html += `<div class="${cls}" onclick="toggleDay('${key}',${dow},${isFut})">${label}</div>`;
     }
-
+ 
     grid.innerHTML = html;
   }
-
+ 
   function toggleDay(key, dow, isFuture){
     if(isFuture) return;
     const cur = dayOverrides[key];
     const isWeekend = dow === 0 || dow === 6;
-
+ 
     if(isWeekend){
       // Weekends cycle: off → worked(✓) → half(½) → off
       if(!cur){                        dayOverrides[key] = 'worked'; }
@@ -1123,20 +1186,20 @@
     renderCalendar();
     updateEstimate();
   }
-
+ 
   // ── PWA service worker ─────────────────────────────────────
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./sw.js').catch(()=>{});
   }
-
+ 
   // ── Time input validation + auto-advance (HH→mm→ss) ──────────
   document.addEventListener('input', e => {
     const el = e.target;
     if(el.tagName !== 'INPUT' || el.type !== 'text') return;
-
+ 
     // Strip non-digits
     el.value = el.value.replace(/[^0-9]/g, '');
-
+ 
     // Clamp on 2 digits entered
     if(el.value.length >= 2){
       const id = el.id || '';
@@ -1147,7 +1210,7 @@
         if(val > 59){ el.value = '59'; val = 59; }
       }
       el.value = String(val).padStart(2, '0');
-
+ 
       // Auto-advance to next field
       const next = el.nextElementSibling && el.nextElementSibling.nextElementSibling;
       if(next && next.tagName === 'INPUT'){
@@ -1155,22 +1218,22 @@
         next.select();
       }
     }
-
+ 
     // Visual error if still invalid (shouldn't happen but safety net)
     const parts = el.closest('.time-parts');
     if(parts) parts.style.borderColor = '';
   });
-
+ 
   // Validate on blur (handles partial input like typing just "6" and leaving)
   document.addEventListener('blur', e => {
     const el = e.target;
     if(el.tagName !== 'INPUT' || el.type !== 'text') return;
     if(el.value === '') return;
-
+ 
     const id = el.id || '';
     let val = parseInt(el.value, 10);
     if(isNaN(val)) { el.value = '00'; return; }
-
+ 
     if(id.startsWith('in-h-') || id.startsWith('out-h-')){
       val = Math.min(23, Math.max(0, val));
     } else {
@@ -1178,19 +1241,19 @@
     }
     el.value = String(val).padStart(2, '0');
   }, true);
-
+ 
   // ── History Drawer ─────────────────────────────────────────
   function openDrawer(){
     renderSessions();
     document.getElementById('drawer').classList.add('open');
     document.getElementById('drawerOverlay').classList.add('open');
   }
-
+ 
   function closeDrawer(){
     document.getElementById('drawer').classList.remove('open');
     document.getElementById('drawerOverlay').classList.remove('open');
   }
-
+ 
   function renderSessions(){
     const list = document.getElementById('sessionList');
     if(!sessions.length){
@@ -1209,7 +1272,7 @@
       const outM = outT ? pad(outT.getMinutes()) : '';
       const outS = outT ? pad(outT.getSeconds()) : '';
       const dur  = s.durationSec ? secsToHMS(s.durationSec) : (s.outTime ? '—' : 'running...');
-
+ 
       return `
         <div class="session-item" id="sess-${i}">
           <div class="session-date">${s.date}</div>
@@ -1245,10 +1308,10 @@
         </div>`;
     }).join('');
   }
-
+ 
   function saveSession(i){
     const s = sessions[i];
-
+ 
     function readParts(prefix){
       const h   = document.getElementById(`${prefix}-h-${i}`).value.trim();
       const m   = document.getElementById(`${prefix}-m-${i}`).value.trim();
@@ -1256,10 +1319,10 @@
       if(h === '' || m === '') return null;
       return { h: Math.min(23, Math.max(0, +h||0)), m: Math.min(59, Math.max(0, +m||0)), sec: Math.min(59, Math.max(0, +sec||0)) };
     }
-
+ 
     const inP  = readParts('in');
     const outP = readParts('out');
-
+ 
     if(inP){
       const base = new Date(s.inTime || new Date().toISOString());
       base.setHours(inP.h, inP.m, inP.sec, 0);
@@ -1275,7 +1338,7 @@
       base.setHours(outP.h, outP.m, outP.sec, 0);
       s.outTime = base.toISOString();
     }
-
+ 
     // Recalc duration
     if(s.inTime && s.outTime){
       const diff = new Date(s.outTime) - new Date(s.inTime);
@@ -1286,12 +1349,12 @@
       s.durationSec = 0;
       document.getElementById(`dur-${i}`).textContent = 'running...';
     }
-
+ 
     localStorage.setItem('sessions', JSON.stringify(sessions));
     calcStats();
     showLastAction();
     showToast('✓ Session updated');
-
+ 
     // Sync to Sheets with full HH:mm:ss + sheetRow so edits hit the right row
     if(inP){
       const t = `${pad(inP.h)}:${pad(inP.m)}:${pad(inP.sec)}`;
@@ -1302,23 +1365,23 @@
       syncToSheets({ date: s.date, time: t, action: 'OUT_EDIT', sheetRow: s.sheetRow });
     }
   }
-
+ 
   function deleteSession(i){
     const s = sessions[i];
-
+ 
     // Block deletion if session is still running (no OUT yet)
     if(!s.outTime){
       showToast('⚠ Clock out first before deleting', 3000);
       return;
     }
-
+ 
     if(!confirm('Delete this session?')) return;
-
+ 
     // Tell Sheets to clear this row
     if(s.sheetRow){
       syncToSheets({ action: 'DELETE', sheetRow: s.sheetRow });
     }
-
+ 
     sessions.splice(i, 1);
     localStorage.setItem('sessions', JSON.stringify(sessions));
     calcStats();
@@ -1326,7 +1389,7 @@
     renderSessions();
     showToast('Session deleted');
   }
-
+ 
   function syncToSheets(payload){
     setSyncState('syncing');
     fetch(SCRIPT_URL, {
