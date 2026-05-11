@@ -766,22 +766,27 @@
  
   function syncFromSheets(){
     setSyncState('syncing');
-    // Apps Script GET redirects — must use POST to read data reliably
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ action: 'GET_MONTH' })
-    })
-      .then(r => {
-        if(!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
-      .then(res => {
-        setSyncState('synced');
-        if(!res.sessions) return;
-        const sheetSessions = res.sessions;
  
-        // Replace current month sessions with Sheets data
+    // JSONP: only way to read responses from Apps Script cross-origin
+    const callbackName = 'gsCallback_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      cleanup();
+      onSyncDone();
+      showToast('⚠ Sync timed out — using local data', 3000);
+    }, 8000);
+ 
+    function cleanup(){
+      clearTimeout(timeout);
+      delete window[callbackName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+ 
+    window[callbackName] = function(res){
+      cleanup();
+      setSyncState('synced');
+      if(res && res.sessions){
+        const sheetSessions = res.sessions;
         const now = new Date();
         const currentMonth = now.getFullYear() + '-' + now.getMonth();
         const otherMonths = sessions.filter(s => {
@@ -792,7 +797,7 @@
         sessions = [...otherMonths, ...sheetSessions];
         localStorage.setItem('sessions', JSON.stringify(sessions));
  
-        // Derive isClockedIn from last session in Sheets
+        // Derive isClockedIn from last Sheets session
         const last = sheetSessions.length > 0 ? sheetSessions[sheetSessions.length - 1] : null;
         if(last && !last.outTime){
           isClockedIn = true;
@@ -805,19 +810,27 @@
           localStorage.setItem('isClockedIn', 'false');
           localStorage.removeItem('clockInTime');
         }
-      })
-      .catch(err => {
-        setSyncState('error');
-        console.warn('Sync from Sheets failed:', err);
-        showToast('⚠ Sync error: ' + err.message, 4000);
-      })
-      .finally(() => {
-        updateUI();
-        document.getElementById('mainBtn').style.pointerEvents = '';
-        calcStats();
-        updateEstimate();
-        showLastAction();
-      });
+      }
+      onSyncDone();
+    };
+ 
+    script.onerror = function(){
+      cleanup();
+      setSyncState('error');
+      showToast('⚠ Could not sync — using local data', 3000);
+      onSyncDone();
+    };
+ 
+    script.src = SCRIPT_URL + '?action=GET_MONTH&callback=' + callbackName;
+    document.head.appendChild(script);
+  }
+ 
+  function onSyncDone(){
+    updateUI();
+    document.getElementById('mainBtn').style.pointerEvents = '';
+    calcStats();
+    updateEstimate();
+    showLastAction();
   }
  
   // ── Clock tick ─────────────────────────────────────────────
@@ -971,19 +984,14 @@
  
     if(action === 'IN'){
       // For IN: fetch so we can read the actual row number back
+      // no-cors required for cross-origin POST to Apps Script
+      // sheetRow is synced back on next app open via GET_MONTH
       fetch(SCRIPT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
+        mode: 'no-cors',
         body: JSON.stringify(payload)
       })
-      .then(r => r.json())
-      .then(res => {
-        if(res.row){
-          sessions[sessions.length - 1].sheetRow = res.row;
-          localStorage.setItem('sessions', JSON.stringify(sessions));
-        }
-        setSyncState('synced');
-      })
+      .then(()=> setSyncState('synced'))
       .catch(()=>{ setSyncState('error'); showToast('⚠ Sync failed — saved locally', 3000); });
     } else {
       // For OUT: wait until sheetRow is available, then send
@@ -997,7 +1005,7 @@
         }
         fetch(SCRIPT_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
+          mode: 'no-cors',
           body: JSON.stringify({...payload, sheetRow})
         })
         .then(()=> setSyncState('synced'))
@@ -1394,7 +1402,7 @@
     setSyncState('syncing');
     fetch(SCRIPT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
+      mode: 'no-cors',
       body: JSON.stringify(payload)
     })
     .then(()=> setSyncState('synced'))
