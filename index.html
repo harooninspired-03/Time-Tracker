@@ -836,6 +836,8 @@
   // ── Clock tick ─────────────────────────────────────────────
   function pad(n){ return String(n).padStart(2,'0'); }
 
+  function isoDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+
   function secsToHMS(s){
     const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = Math.floor(s%60);
     return `${pad(h)}:${pad(m)}:${pad(sec)}`;
@@ -852,7 +854,7 @@
   tickClock();
 
   // ── Stats calculation ──────────────────────────────────────
-  function todayKey(){ return new Date().toLocaleDateString(); }
+  function todayKey(){ return isoDate(new Date()); }
   function monthKey(){ const n=new Date(); return `${n.getFullYear()}-${n.getMonth()}`; }
 
   function calcStats(){
@@ -950,7 +952,7 @@
     if(action === 'IN'){
       clockInTime = now;
       localStorage.setItem('clockInTime', now.toISOString());
-      sessions.push({ date: now.toLocaleDateString(), inTime: now.toISOString(), outTime: null, durationSec: 0 });
+      sessions.push({ date: isoDate(now), inTime: now.toISOString(), outTime: null, durationSec: 0 });
     } else {
       const last = sessions[sessions.length-1];
       // Guard: if there's no open session (e.g. it was deleted), abort the OUT
@@ -976,7 +978,7 @@
 
     // ── 3. Background sync to Google Sheets ──
     const payload = {
-      date: now.toLocaleDateString(),
+      date: isoDate(now),
       time: `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
       action
     };
