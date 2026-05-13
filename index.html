@@ -870,11 +870,11 @@
       }
     });
 
-    // Add live running time for the current open session
+    // Add live running time for the current open session (updates every second)
     if(isClockedIn && clockInTime){
       const live = (Date.now() - clockInTime.getTime()) / 1000;
       const now = new Date();
-      if(now.toLocaleDateString() === today) todaySec += live;
+      if(isoDate(now) === today) todaySec += live;
       const mk = `${now.getFullYear()}-${now.getMonth()}`;
       if(mk === month) monthSec += live;
     }
@@ -1080,11 +1080,18 @@
       const abs = Math.abs(secs);
       const h = Math.floor(abs/3600);
       const m = Math.floor((abs%3600)/60);
+      const s = Math.floor(abs%60);
+      return `${h}:${pad(m)}:${pad(s)}`;
+    }
+    function hhmmNoSec(secs){
+      const abs = Math.abs(secs);
+      const h = Math.floor(abs/3600);
+      const m = Math.floor((abs%3600)/60);
       return `${h}:${pad(m)}`;
     }
 
     document.getElementById('estActual').textContent = hhmm(monthSec);
-    document.getElementById('estTarget').textContent = hhmm(expectedSec);
+    document.getElementById('estTarget').textContent = hhmmNoSec(expectedSec);
 
     const diffEl = document.getElementById('estDiff');
     const progEl = document.getElementById('estProgress');
@@ -1096,11 +1103,11 @@
       const pct = Math.min(100, (monthSec / expectedSec) * 100).toFixed(1);
       progEl.style.width = pct + '%';
       if(diffSec >= 0){
-        diffEl.textContent = `+${hhmm(diffSec)} ahead`;
+        diffEl.textContent = `+${hhmmNoSec(diffSec)} ahead`;
         diffEl.className = 'estimate-diff ahead';
         progEl.className = 'progress-fill';
       } else {
-        diffEl.textContent = `-${hhmm(diffSec)} behind`;
+        diffEl.textContent = `-${hhmmNoSec(diffSec)} behind`;
         diffEl.className = 'estimate-diff behind';
         progEl.className = 'progress-fill behind';
       }
