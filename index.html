@@ -785,8 +785,6 @@
     window[callbackName] = function(res){
       cleanup();
       setSyncState('synced');
-      // DEBUG: show what came back
-      showToast('Got ' + (res && res.sessions ? res.sessions.length : 0) + ' sessions from Sheets', 4000);
       if(res && res.sessions){
         const sheetSessions = res.sessions;
         const now = new Date();
